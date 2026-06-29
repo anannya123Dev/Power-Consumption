@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 PowerSense — History</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg:#05050f; --surface:#0d0d1f; --surface2:#13132a; --border:#1c1c3a;
+  --accent:#7b5ea7; --accent2:#4fc3f7; --glow:rgba(123,94,167,0.35);
+  --low:#4ade80; --med:#fb923c; --high:#f87171;
+  --text:#e8e8f0; --muted:#6b6b8a;
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(123,94,167,0.1) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 40% at 85% 70%,rgba(79,195,247,0.07) 0%,transparent 60%);
+  pointer-events:none;}
+
+/* Nav */
+nav{position:sticky;top:0;z-index:100;background:rgba(5,5,15,0.85);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);
+  font-size:1.2em;font-weight:700;color:var(--text);}
+.nav-brand .bolt{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 16px var(--glow);}
+.nav-links{display:flex;gap:4px;}
+.nav-links a{font-size:0.85em;font-weight:500;color:var(--muted);text-decoration:none;
+  padding:7px 14px;border-radius:8px;transition:all 0.2s;border:1px solid transparent;}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--surface2);border-color:var(--border);}
+
+main{position:relative;z-index:1;padding:28px 32px;}
+
+/* Page title */
+.page-title{font-family:var(--font-display);font-size:1.6em;font-weight:700;
+  margin-bottom:6px;
+  background:linear-gradient(135deg,var(--text),var(--muted));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.page-sub{font-size:0.85em;color:var(--muted);margin-bottom:28px;}
+
+/* Summary cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:20px;position:relative;overflow:hidden;transition:transform 0.25s;cursor:default;}
+.kpi:hover{transform:translateY(-3px);}
+.kpi-label{font-size:0.72em;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;
+  color:var(--muted);margin-bottom:10px;}
+.kpi-value{font-family:var(--font-display);font-size:1.9em;font-weight:700;
+  background:linear-gradient(135deg,var(--accent2),#a78bfa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.kpi-icon{position:absolute;right:14px;top:14px;font-size:1.5em;opacity:0.12;}
+
+/* Filters */
+.filter-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:20px 24px;margin-bottom:24px;}
+.filter-title{font-size:0.72em;font-weight:500;text-transform:uppercase;
+  letter-spacing:0.08em;color:var(--muted);margin-bottom:14px;}
+.filter-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
+.filter-group{display:flex;flex-direction:column;gap:6px;}
+.filter-group label{font-size:0.75em;color:var(--muted);font-weight:500;}
+.filter-group select,.filter-group input{
+  background:var(--surface2);color:var(--text);
+  border:1px solid var(--border);padding:8px 12px;
+  border-radius:9px;font-size:0.84em;
+  font-family:var(--font-body);
+  transition:border-color 0.2s;outline:none;}
+.filter-group select:focus,.filter-group input:focus{border-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
+  border-radius:9px;font-size:0.82em;font-weight:600;
+  background:linear-gradient(135deg,var(--accent),#6366f1);
+  color:white;text-decoration:none;transition:all 0.2s;
+  border:none;cursor:pointer;box-shadow:0 2px 12px rgba(123,94,167,0.3);}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(123,94,167,0.45);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);
+  box-shadow:none;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--text);transform:none;}
+.search-input{background:var(--surface2);color:var(--text);border:1px solid var(--border);
+  padding:8px 14px;border-radius:9px;font-size:0.84em;width:180px;outline:none;
+  font-family:var(--font-body);transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--accent);}
+
+/* Charts */
+.chart-row{display:grid;gap:16px;margin-bottom:16px;}
+.chart-row.r2{grid-template-columns:1fr 1fr;}
+.chart-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:22px;position:relative;overflow:hidden;}
+.chart-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.4;}
+.chart-title{font-family:var(--font-display);font-size:0.82em;font-weight:600;
+  color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;
+  margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+
+/* Table */
+.table-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:22px;overflow-x:auto;}
+.table-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.table-title{font-family:var(--font-display);font-size:0.82em;font-weight:600;
+  color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:0.72em;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;
+  color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:12px 14px;font-size:0.86em;border-bottom:1px solid rgba(28,28,58,0.5);transition:background 0.2s;}
+tr:hover td{background:var(--surface2);}
+tr:last-child td{border-bottom:none;}
+.mono{font-family:var(--font-mono);font-size:0.85em;color:var(--accent2);}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;
+  font-size:0.72em;font-weight:600;letter-spacing:0.04em;}
+.pill.low{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.25);}
+.pill.medium{background:rgba(251,146,60,0.12);color:#fb923c;border:1px solid rgba(251,146,60,0.25);}
+.pill.high{background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25);}
+
+/* Pagination */
+.pagination{display:flex;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap;}
+.pg-btn{padding:6px 13px;background:var(--surface2);color:var(--muted);
+  border:1px solid var(--border);border-radius:7px;cursor:pointer;
+  font-size:0.82em;transition:all 0.2s;}
+.pg-btn:hover:not(.active){border-color:var(--accent);color:var(--text);}
+.pg-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+
+/* Empty state */
+.empty{text-align:center;padding:48px;color:var(--muted);}
+.empty .emoji{font-size:2.5em;margin-bottom:12px;}
+.empty p{font-size:0.9em;}
+
+footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
+  border-top:1px solid var(--border);font-family:var(--font-mono);position:relative;z-index:1;}
+
+/* Fade in */
+.fade-up{opacity:0;transform:translateY(16px);animation:fadeup 0.45s ease forwards;}
+@keyframes fadeup{to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .chart-row.r2{grid-template-columns:1fr;}
+  main{padding:16px;}
+  nav{padding:0 16px;}
+  .filter-row{flex-direction:column;align-items:stretch;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="bolt">⚡</div>
+    PowerSense
+  </div>
+  <div class="nav-links">
+    <a href="/">Dashboard</a>
+    <a href="/history" class="active">History</a>
+    <a href="/guide">Guide</a>
+    <a href="/export">Export</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-title fade-up">Historical Data</div>
+  <div class="page-sub fade-up">Browse, filter, and analyse past power readings</div>
+
+  <!-- Summary cards -->
+  <div class="kpi-grid">
+    <div class="kpi fade-up">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-label">Total Readings</div>
+      <div class="kpi-value" id="s-total">--</div>
+    </div>
+    <div class="kpi fade-up">
+      <div class="kpi-icon">⚡</div>
+      <div class="kpi-label">Avg Power (W)</div>
+      <div class="kpi-value" id="s-avg">--</div>
+    </div>
+    <div class="kpi fade-up">
+      <div class="kpi-icon">🔺</div>
+      <div class="kpi-label">Peak Power (W)</div>
+      <div class="kpi-value" id="s-peak">--</div>
+    </div>
+    <div class="kpi fade-up">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">Total Est. Bill</div>
+      <div class="kpi-value" id="s-bill">--</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-card fade-up">
+    <div class="filter-title">🔍 Filter readings</div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Device</label>
+        <select id="f-device">
+          <option value="all">All Devices</option>
+          <option>Fan</option><option>AC</option>
+          <option>TV</option><option>Fridge</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Category</label>
+        <select id="f-cat">
+          <option value="all">All</option>
+          <option>Low</option><option>Medium</option><option>High</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>From date</label>
+        <input type="date" id="f-from">
+      </div>
+      <div class="filter-group">
+        <label>To date</label>
+        <input type="date" id="f-to">
+      </div>
+      <div class="filter-group">
+        <label>Search</label>
+        <input class="search-input" type="text" id="f-search" placeholder="🔎 Device name...">
+      </div>
+      <button class="btn" onclick="applyFilters()">Apply</button>
+      <button class="btn btn-ghost" onclick="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-row r2">
+    <div class="chart-card fade-up">
+      <div class="chart-title"><span>📈</span> Power Over Time</div>
+      <canvas id="c-trend" height="130"></canvas>
+    </div>
+    <div class="chart-card fade-up">
+      <div class="chart-title"><span>🍩</span> Category Breakdown</div>
+      <canvas id="c-donut" height="130"></canvas>
+    </div>
+  </div>
+  <div class="chart-row r2">
+    <div class="chart-card fade-up">
+      <div class="chart-title"><span>📊</span> Avg Power per Device</div>
+      <canvas id="c-bar" height="130"></canvas>
+    </div>
+    <div class="chart-card fade-up">
+      <div class="chart-title"><span>💸</span> Bill Over Time</div>
+      <canvas id="c-bill" height="130"></canvas>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card fade-up">
+    <div class="table-header">
+      <div class="table-title">🗃 All Readings</div>
+      <a class="btn" href="/export">⬇ Export CSV</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Timestamp</th><th>Device</th>
+          <th>Voltage</th><th>Current</th>
+          <th>Calc Power</th><th>API Power</th>
+          <th>Hybrid Power</th><th>Predicted</th><th>Category</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</main>
+
+<footer>PowerSense · Real-Time ML Power Monitor · Flask + SQLite + Random Forest</footer>
+
+<script>
+let allRows=[], filteredRows=[];
+const PAGE=15; let pg=1;
+const COLORS=['#7b5ea7','#4fc3f7','#fb923c','#4ade80'];
+const opts={
+  plugins:{legend:{labels:{color:'#6b6b8a',font:{family:"'Inter'",size:11}}}},
+  scales:{x:{ticks:{color:'#6b6b8a',maxTicksLimit:8},grid:{color:'rgba(28,28,58,0.8)'},border:{display:false}},
+          y:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(28,28,58,0.8)'},border:{display:false}}}
+};
+
+const cTrend=new Chart(document.getElementById('c-trend'),{type:'line',
+  data:{labels:[],datasets:[{label:'Predicted (W)',data:[],borderColor:'#7b5ea7',
+    backgroundColor:'rgba(123,94,167,0.08)',fill:true,tension:0.45,pointRadius:2}]},
+  options:{...opts,animation:{duration:300}}});
+
+const cDonut=new Chart(document.getElementById('c-donut'),{type:'doughnut',
+  data:{labels:['Low','Medium','High'],datasets:[{data:[0,0,0],
+    backgroundColor:['#4ade80','#fb923c','#f87171'],borderColor:'#0d0d1f',borderWidth:3,hoverOffset:6}]},
+  options:{plugins:{legend:{position:'bottom',labels:{color:'#6b6b8a',padding:14,font:{family:"'Inter'",size:11}}}},cutout:'65%'}});
+
+const cBar=new Chart(document.getElementById('c-bar'),{type:'bar',
+  data:{labels:[],datasets:[{label:'Avg Hybrid (W)',data:[],backgroundColor:COLORS,borderRadius:6,borderSkipped:false}]},
+  options:opts});
+
+const cBill=new Chart(document.getElementById('c-bill'),{type:'line',
+  data:{labels:[],datasets:[{label:'₹ Bill',data:[],borderColor:'#fcd34d',
+    backgroundColor:'rgba(252,211,77,0.07)',fill:true,tension:0.45,pointRadius:2}]},
+  options:{...opts,animation:{duration:300}}});
+
+fetch('/api/history').then(r=>r.json()).then(data=>{
+  allRows=data; filteredRows=[...data]; updateAll();
+});
+
+function updateAll(){ updateCards(); updateCharts(); renderTable(); }
+
+function updateCards(){
+  const rows=filteredRows;
+  if(!rows.length) return;
+  const pred=rows.map(r=>r.predicted_total||0);
+  document.getElementById('s-total').textContent=rows.length;
+  document.getElementById('s-avg').textContent=(pred.reduce((a,b)=>a+b,0)/pred.length).toFixed(1);
+  document.getElementById('s-peak').textContent=Math.max(...pred).toFixed(1);
+  document.getElementById('s-bill').textContent='₹ '+(pred.reduce((a,b)=>a+b,0)/1000*6.5).toFixed(2);
+}
+
+function updateCharts(){
+  const rows=filteredRows.slice(-40);
+  cTrend.data.labels=rows.map(r=>(r.timestamp||'').slice(11,19));
+  cTrend.data.datasets[0].data=rows.map(r=>r.predicted_total);
+  cTrend.update();
+
+  cDonut.data.datasets[0].data=[
+    filteredRows.filter(r=>r.category==='Low').length,
+    filteredRows.filter(r=>r.category==='Medium').length,
+    filteredRows.filter(r=>r.category==='High').length
+  ];
+  cDonut.update();
+
+  const devs=['Fan','AC','TV','Fridge'];
+  cBar.data.labels=devs;
+  cBar.data.datasets[0].data=devs.map(d=>{
+    const dr=filteredRows.filter(r=>r.device===d);
+    return dr.length?(dr.reduce((a,r)=>a+(r.hybrid_power||0),0)/dr.length).toFixed(1):0;
+  });
+  cBar.update();
+
+  cBill.data.labels=rows.map(r=>(r.timestamp||'').slice(11,19));
+  cBill.data.datasets[0].data=rows.map(r=>((r.predicted_total||0)/1000*6.5).toFixed(4));
+  cBill.update();
+}
+
+function renderTable(){
+  const start=(pg-1)*PAGE;
+  const slice=filteredRows.slice(start,start+PAGE);
+  const tbody=document.getElementById('tbl-body');
+  tbody.innerHTML='';
+  if(!slice.length){
+    tbody.innerHTML=`<tr><td colspan="10">
+      <div class="empty"><div class="emoji">🔍</div>
+      <p>No readings match your filters.</p></div></td></tr>`;
+    document.getElementById('pagination').innerHTML='';
+    return;
+  }
+  slice.forEach((r,i)=>{
+    const cat=(r.category||'').toLowerCase();
+    tbody.innerHTML+=`<tr>
+      <td style="color:var(--muted)">${start+i+1}</td>
+      <td><span class="mono" style="font-size:0.78em">${r.timestamp||'--'}</span></td>
+      <td><strong style="font-family:var(--font-display)">${r.device||'--'}</strong></td>
+      <td><span class="mono">${(r.voltage||0).toFixed(1)}</span></td>
+      <td><span class="mono">${(r.current||0).toFixed(3)}</span></td>
+      <td><span class="mono">${(r.calc_power||0).toFixed(1)}</span></td>
+      <td><span class="mono">${(r.api_power||0).toFixed(1)}</span></td>
+      <td><span class="mono">${(r.hybrid_power||0).toFixed(1)}</span></td>
+      <td><span class="mono">${(r.predicted_total||0).toFixed(1)}</span></td>
+      <td><span class="pill ${cat}">${r.category||'--'}</span></td>
+    </tr>`;
+  });
+  renderPg();
+}
+
+function renderPg(){
+  const total=Math.ceil(filteredRows.length/PAGE);
+  const div=document.getElementById('pagination');
+  div.innerHTML='';
+  for(let i=1;i<=total;i++)
+    div.innerHTML+=`<button class="pg-btn ${i===pg?'active':''}" onclick="goPage(${i})">${i}</button>`;
+}
+
+function goPage(n){ pg=n; renderTable(); }
+
+function applyFilters(){
+  const dev=document.getElementById('f-device').value;
+  const cat=document.getElementById('f-cat').value;
+  const from=document.getElementById('f-from').value;
+  const to=document.getElementById('f-to').value;
+  const q=document.getElementById('f-search').value.toLowerCase();
+  filteredRows=allRows.filter(r=>{
+    const d=(r.timestamp||'').split(' ')[0];
+    return (dev==='all'||r.device===dev)&&
+           (cat==='all'||r.category===cat)&&
+           (!from||d>=from)&&(!to||d<=to)&&
+           (!q||(r.device||'').toLowerCase().includes(q));
+  });
+  pg=1; updateAll();
+}
+
+function resetFilters(){
+  ['f-device','f-cat','f-search'].forEach(id=>document.getElementById(id).value=id==='f-device'||id==='f-cat'?'all':'');
+  document.getElementById('f-from').value='';
+  document.getElementById('f-to').value='';
+  filteredRows=[...allRows]; pg=1; updateAll();
+}
+
+document.getElementById('f-search').addEventListener('input',applyFilters);
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+from flask import Flask, render_template, jsonify, Response
+from data_collector import get_api_data
+from preprocessing import clean_and_hybrid
+from ml_model import predict_power, classify_power
+from database import init_db, insert_reading
+from bill_calculator import calculate_bill
+from datetime import datetime
+import sqlite3
+import threading
+import time
+import io
+import csv
+
+app = Flask(__name__)
+init_db()
+
+latest_data = {}
+device_status = {"Fan": True, "AC": True, "TV": True, "Fridge": True}
+
+def collection_loop():
+    while True:
+        try:
+            raw = get_api_data()
+            df  = clean_and_hybrid(raw)
+
+            df["active"] = df["device"].map(lambda d: device_status.get(d, True))
+
+            active_df    = df[df["active"] == True]
+            total_hybrid = active_df["hybrid_power"].sum() if len(active_df) else 0.0
+
+            predicted = predict_power(
+                df["voltage"].mean(),
+                df["current"].mean(),
+                total_hybrid
+            ) if len(active_df) else 0.0
+
+            category  = classify_power(predicted)
+            kwh, bill = calculate_bill(predicted)
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            global latest_data
+            latest_data = {
+                "devices":         df.to_dict(orient="records"),
+                "total_predicted": predicted,
+                "category":        category,
+                "kwh":             kwh,
+                "bill":            bill,
+                "timestamp":       timestamp
+            }
+
+            for _, row in active_df.iterrows():
+                insert_reading({
+                    "timestamp":       timestamp,
+                    "device":          row["device"],
+                    "voltage":         row["voltage"],
+                    "current":         row["current"],
+                    "calc_power":      row["calc_power"],
+                    "api_power":       row["api_power"],
+                    "hybrid_power":    row["hybrid_power"],
+                    "predicted_total": predicted,
+                    "category":        category
+                })
+
+        except Exception as e:
+            print(f"Collection error: {e}")
+
+        time.sleep(5)
+
+threading.Thread(target=collection_loop, daemon=True).start()
+
+# ── Routes ────────────────────────────────────────────────────
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/history")
+def history():
+    return render_template("history.html")
+
+@app.route("/guide")
+def guide():
+    return render_template("guide.html")
+
+@app.route("/api/data")
+def api_data():
+    return jsonify(latest_data)
+
+@app.route("/api/history")
+def api_history():
+    conn = sqlite3.connect("power_data.db")
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM readings ORDER BY id DESC LIMIT 500")
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return jsonify(rows)
+
+@app.route("/api/toggle/<device>", methods=["POST"])
+def toggle(device):
+    device_status[device] = not device_status.get(device, True)
+    return jsonify({"device": device, "status": device_status[device]})
+
+@app.route("/export")
+def export():
+    conn = sqlite3.connect("power_data.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM readings ORDER BY id DESC")
+    rows = c.fetchall()
+    conn.close()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ID","Timestamp","Device","Voltage","Current",
+                     "Calc Power","API Power","Hybrid Power",
+                     "Predicted Total","Category"])
+    writer.writerows(rows)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=power_data.csv"}
+    )
+
+if __name__ == "__main__":
+    app.run(debug=True)

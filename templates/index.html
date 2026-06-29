@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ PowerSense — Live Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg:        #05050f;
+  --surface:   #0d0d1f;
+  --surface2:  #13132a;
+  --border:    #1c1c3a;
+  --accent:    #7b5ea7;
+  --accent2:   #4fc3f7;
+  --glow:      rgba(123,94,167,0.35);
+  --glow2:     rgba(79,195,247,0.25);
+  --low:       #4ade80;
+  --med:       #fb923c;
+  --high:      #f87171;
+  --text:      #e8e8f0;
+  --muted:     #6b6b8a;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Animated background ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(123,94,167,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(79,195,247,0.08) 0%, transparent 60%);
+  pointer-events:none;
+}
+
+/* ── Grid noise texture ── */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none;
+}
+
+/* ── Nav ── */
+nav {
+  position:sticky; top:0; z-index:100;
+  background: rgba(5,5,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display:flex; align-items:center; justify-content:space-between;
+  height: 64px;
+}
+
+.nav-brand {
+  display:flex; align-items:center; gap:10px;
+  font-family: var(--font-display);
+  font-size: 1.2em; font-weight:700;
+  color: var(--text);
+}
+
+.nav-brand .bolt {
+  width:32px; height:32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1em;
+  box-shadow: 0 0 16px var(--glow);
+  animation: boltpulse 2s ease-in-out infinite;
+}
+
+@keyframes boltpulse {
+  0%,100% { box-shadow:0 0 16px var(--glow); }
+  50%      { box-shadow:0 0 28px var(--glow), 0 0 8px var(--glow2); }
+}
+
+.nav-links { display:flex; gap:4px; }
+.nav-links a {
+  font-family: var(--font-body);
+  font-size:0.85em; font-weight:500;
+  color: var(--muted);
+  text-decoration:none;
+  padding:7px 14px; border-radius:8px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.nav-links a:hover, .nav-links a.active {
+  color: var(--text);
+  background: var(--surface2);
+  border-color: var(--border);
+}
+
+.nav-right {
+  display:flex; align-items:center; gap:12px;
+  font-family: var(--font-mono);
+  font-size:0.78em; color: var(--muted);
+}
+
+.live-badge {
+  display:flex; align-items:center; gap:6px;
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.3);
+  padding:4px 10px; border-radius:20px;
+  color: var(--low); font-size:0.8em;
+}
+.live-dot {
+  width:6px; height:6px;
+  background: var(--low); border-radius:50%;
+  animation: livepulse 1.4s ease-in-out infinite;
+}
+@keyframes livepulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.4; transform:scale(0.7); }
+}
+
+/* ── Layout ── */
+main { position:relative; z-index:1; padding:28px 32px; }
+
+/* ── Status banner ── */
+.banner {
+  border-radius:12px; padding:12px 20px;
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:24px; font-size:0.9em; font-weight:500;
+  border: 1px solid; opacity:0;
+  transition: opacity 0.5s;
+  animation: slidein 0.4s ease forwards;
+}
+@keyframes slidein {
+  from { transform:translateY(-8px); opacity:0; }
+  to   { transform:translateY(0);    opacity:1; }
+}
+.banner-icon { font-size:1.3em; }
+.banner.low    { background:rgba(74,222,128,0.08);  border-color:rgba(74,222,128,0.3);  color:#4ade80; }
+.banner.medium { background:rgba(251,146,60,0.08);  border-color:rgba(251,146,60,0.3);  color:#fb923c; }
+.banner.high   { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:#f87171; }
+
+/* ── KPI Cards ── */
+.kpi-grid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:16px; margin-bottom:24px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:16px; padding:22px 20px;
+  position:relative; overflow:hidden;
+  transition: transform 0.25s, box-shadow 0.25s;
+  cursor:default;
+}
+.kpi::before {
+  content:''; position:absolute; inset:0; border-radius:16px;
+  background: linear-gradient(135deg, rgba(123,94,167,0.06) 0%, transparent 60%);
+  opacity:0; transition:opacity 0.3s;
+}
+.kpi:hover { transform:translateY(-4px); box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+.kpi:hover::before { opacity:1; }
+
+.kpi-label {
+  font-size:0.72em; font-weight:500; text-transform:uppercase;
+  letter-spacing:0.08em; color:var(--muted); margin-bottom:12px;
+}
+.kpi-value {
+  font-family: var(--font-display);
+  font-size:2.2em; font-weight:700; line-height:1;
+  background: linear-gradient(135deg, var(--accent2), #a78bfa);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.kpi-value.low    { background:linear-gradient(135deg,#4ade80,#86efac); -webkit-background-clip:text; background-clip:text; }
+.kpi-value.medium { background:linear-gradient(135deg,#fb923c,#fcd34d); -webkit-background-clip:text; background-clip:text; }
+.kpi-value.high   { background:linear-gradient(135deg,#f87171,#fb923c); -webkit-background-clip:text; background-clip:text; }
+
+.kpi-sub { font-size:0.75em; color:var(--muted); margin-top:6px; }
+
+.kpi-icon {
+  position:absolute; right:16px; top:16px;
+  font-size:1.6em; opacity:0.15;
+}
+
+/* ── Chart grid ── */
+.chart-row { display:grid; gap:16px; margin-bottom:16px; }
+.chart-row.r2 { grid-template-columns:2fr 1fr; }
+.chart-row.r22 { grid-template-columns:1fr 1fr; }
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:16px; padding:22px;
+  position:relative; overflow:hidden;
+}
+.chart-card::after {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0.4;
+}
+.chart-title {
+  font-family: var(--font-display);
+  font-size:0.82em; font-weight:600;
+  color:var(--muted); text-transform:uppercase;
+  letter-spacing:0.06em; margin-bottom:18px;
+  display:flex; align-items:center; gap:8px;
+}
+.chart-title span { font-size:1.1em; }
+
+/* ── Device table ── */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:16px; padding:22px;
+  margin-bottom:16px; overflow-x:auto;
+}
+.table-card::after {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent2),transparent);
+  opacity:0.4;
+}
+.table-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:18px;
+}
+.table-title {
+  font-family: var(--font-display);
+  font-size:0.82em; font-weight:600;
+  color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;
+}
+
+table { width:100%; border-collapse:collapse; }
+thead tr { border-bottom:1px solid var(--border); }
+th {
+  font-family: var(--font-body);
+  font-size:0.72em; font-weight:500;
+  text-transform:uppercase; letter-spacing:0.07em;
+  color:var(--muted); padding:10px 14px; text-align:left;
+}
+td {
+  padding:13px 14px; font-size:0.88em;
+  border-bottom:1px solid rgba(28,28,58,0.5);
+  transition:background 0.2s;
+}
+tr:hover td { background:var(--surface2); }
+tr:last-child td { border-bottom:none; }
+
+.device-name {
+  font-family: var(--font-display);
+  font-weight:600; color:var(--text);
+}
+
+/* Toggle switch */
+.switch { position:relative; display:inline-block; width:40px; height:22px; }
+.switch input { opacity:0; width:0; height:0; }
+.slider {
+  position:absolute; cursor:pointer; inset:0;
+  background:#2a2a4a; border-radius:22px;
+  transition:.3s; border:1px solid var(--border);
+}
+.slider:before {
+  position:absolute; content:'';
+  height:16px; width:16px; left:2px; bottom:2px;
+  background:var(--muted); border-radius:50%; transition:.3s;
+}
+input:checked + .slider { background:rgba(123,94,167,0.5); border-color:var(--accent); }
+input:checked + .slider:before { transform:translateX(18px); background:var(--accent2); }
+
+/* Power bar */
+.bar-wrap { background:var(--surface2); border-radius:20px; height:6px; width:100px; }
+.bar-fill { height:6px; border-radius:20px; transition:width 0.6s ease; }
+
+/* Category pill */
+.pill {
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  font-size:0.72em; font-weight:600; letter-spacing:0.04em;
+}
+.pill.low    { background:rgba(74,222,128,0.12); color:#4ade80; border:1px solid rgba(74,222,128,0.25); }
+.pill.medium { background:rgba(251,146,60,0.12);  color:#fb923c; border:1px solid rgba(251,146,60,0.25); }
+.pill.high   { background:rgba(248,113,113,0.12); color:#f87171; border:1px solid rgba(248,113,113,0.25); }
+
+/* Mono values */
+.mono { font-family:var(--font-mono); font-size:0.85em; color:var(--accent2); }
+
+/* Export button */
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; border-radius:9px;
+  font-size:0.82em; font-weight:600;
+  background:linear-gradient(135deg,var(--accent),#6366f1);
+  color:white; text-decoration:none;
+  transition:all 0.2s; border:none; cursor:pointer;
+  box-shadow:0 2px 12px rgba(123,94,167,0.3);
+}
+.btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(123,94,167,0.45); }
+
+footer {
+  text-align:center; padding:28px;
+  font-size:0.75em; color:var(--muted);
+  border-top:1px solid var(--border);
+  font-family:var(--font-mono);
+  position:relative; z-index:1;
+}
+
+/* ── Entry animations ── */
+.fade-up {
+  opacity:0; transform:translateY(20px);
+  animation: fadeup 0.5s ease forwards;
+}
+@keyframes fadeup {
+  to { opacity:1; transform:translateY(0); }
+}
+.kpi:nth-child(1) { animation-delay:0.05s; }
+.kpi:nth-child(2) { animation-delay:0.10s; }
+.kpi:nth-child(3) { animation-delay:0.15s; }
+.kpi:nth-child(4) { animation-delay:0.20s; }
+
+/* Number counter animation */
+@keyframes countup { from { opacity:0.3; } to { opacity:1; } }
+.updated { animation: countup 0.3s ease; }
+
+@media (max-width:900px) {
+  .kpi-grid { grid-template-columns:1fr 1fr; }
+  .chart-row.r2, .chart-row.r22 { grid-template-columns:1fr; }
+  main { padding:16px; }
+  nav { padding:0 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="bolt">⚡</div>
+    PowerSense
+  </div>
+  <div class="nav-links">
+    <a href="/" class="active">Dashboard</a>
+    <a href="/history">History</a>
+    <a href="/guide">Guide</a>
+    <a href="/export">Export</a>
+  </div>
+  <div class="nav-right">
+    <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+    <span id="nav-time">--:--:--</span>
+  </div>
+</nav>
+
+<main>
+
+  <!-- Banner -->
+  <div id="banner" class="banner low" style="display:none">
+    <span class="banner-icon" id="banner-icon">✅</span>
+    <span id="banner-text">Loading data...</span>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi fade-up">
+      <div class="kpi-icon">⚡</div>
+      <div class="kpi-label">Total Power</div>
+      <div class="kpi-value" id="kpi-power">-- W</div>
+      <div class="kpi-sub">Predicted by ML model</div>
+    </div>
+    <div class="kpi fade-up">
+      <div class="kpi-icon">🚦</div>
+      <div class="kpi-label">Status</div>
+      <div class="kpi-value" id="kpi-status">--</div>
+      <div class="kpi-sub">Usage classification</div>
+    </div>
+    <div class="kpi fade-up">
+      <div class="kpi-icon">🔋</div>
+      <div class="kpi-label">Units Used</div>
+      <div class="kpi-value" id="kpi-kwh">-- kWh</div>
+      <div class="kpi-sub">This reading cycle</div>
+    </div>
+    <div class="kpi fade-up">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">Est. Bill</div>
+      <div class="kpi-value" id="kpi-bill">₹ --</div>
+      <div class="kpi-sub">At ₹6.5 / unit</div>
+    </div>
+  </div>
+
+  <!-- Charts row 1 -->
+  <div class="chart-row r2">
+    <div class="chart-card">
+      <div class="chart-title"><span>📈</span> Live Power Trend</div>
+      <canvas id="trendChart" height="100"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title"><span>🍩</span> Device Share</div>
+      <canvas id="donutChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div class="chart-row r22">
+    <div class="chart-card">
+      <div class="chart-title"><span>📊</span> Device Comparison</div>
+      <canvas id="barChart" height="100"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title"><span>💸</span> Cost Trend (₹)</div>
+      <canvas id="costChart" height="100"></canvas>
+    </div>
+  </div>
+
+  <!-- Device Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title">🔌 Device Readings</div>
+      <a class="btn" href="/export">⬇ Export CSV</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th>Toggle</th>
+          <th>Voltage</th>
+          <th>Current</th>
+          <th>Hybrid Power</th>
+          <th>Usage</th>
+          <th>Category</th>
+        </tr>
+      </thead>
+      <tbody id="device-tbody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>PowerSense · Real-Time ML Power Monitor · Flask + SQLite + Random Forest</footer>
+
+<script>
+const COLORS = ['#7b5ea7','#4fc3f7','#fb923c','#4ade80'];
+const chartDefaults = {
+  plugins:{ legend:{ labels:{ color:'#6b6b8a', font:{ family:"'Inter',sans-serif", size:11 } } } },
+  scales:{
+    x:{ ticks:{ color:'#6b6b8a', maxTicksLimit:8 }, grid:{ color:'rgba(28,28,58,0.8)' }, border:{display:false} },
+    y:{ ticks:{ color:'#6b6b8a' }, grid:{ color:'rgba(28,28,58,0.8)' }, border:{display:false} }
+  }
+};
+
+// Trend
+const trendData = { labels:[], datasets:[{
+  label:'Power (W)', data:[],
+  borderColor:'#7b5ea7', backgroundColor:'rgba(123,94,167,0.08)',
+  fill:true, tension:0.45, pointRadius:3,
+  pointBackgroundColor:'#7b5ea7', pointBorderColor:'#0d0d1f', pointBorderWidth:2
+}]};
+const trendChart = new Chart(document.getElementById('trendChart'),
+  { type:'line', data:trendData, options:{ ...chartDefaults, animation:{duration:400} } });
+
+// Donut
+const donut = new Chart(document.getElementById('donutChart'),{
+  type:'doughnut',
+  data:{ labels:[], datasets:[{ data:[], backgroundColor:COLORS,
+    borderColor:'#0d0d1f', borderWidth:3, hoverOffset:8 }]},
+  options:{ plugins:{ legend:{ position:'bottom', labels:{ color:'#6b6b8a', padding:16,
+    font:{family:"'Inter',sans-serif",size:11} } } }, cutout:'65%' }
+});
+
+// Bar
+const bar = new Chart(document.getElementById('barChart'),{
+  type:'bar',
+  data:{ labels:[], datasets:[{ label:'Hybrid Power (W)', data:[],
+    backgroundColor:COLORS, borderRadius:6, borderSkipped:false }]},
+  options:{ ...chartDefaults }
+});
+
+// Cost
+const costData = { labels:[], datasets:[{
+  label:'Cost (₹)', data:[],
+  borderColor:'#fcd34d', backgroundColor:'rgba(252,211,77,0.07)',
+  fill:true, tension:0.45, pointRadius:3,
+  pointBackgroundColor:'#fcd34d', pointBorderColor:'#0d0d1f', pointBorderWidth:2
+}]};
+const costChart = new Chart(document.getElementById('costChart'),
+  { type:'line', data:costData, options:{ ...chartDefaults, animation:{duration:400} } });
+
+const deviceToggles = {};
+
+function animateValue(el, newVal) {
+  el.classList.remove('updated');
+  void el.offsetWidth;
+  el.classList.add('updated');
+  el.textContent = newVal;
+}
+
+function refresh() {
+  fetch('/api/data').then(r=>r.json()).then(d => {
+    if (!d.devices) return;
+
+    // KPI cards
+    animateValue(document.getElementById('kpi-power'), d.total_predicted + ' W');
+    animateValue(document.getElementById('kpi-kwh'),   d.kwh + ' kWh');
+    animateValue(document.getElementById('kpi-bill'),  '₹ ' + d.bill);
+    document.getElementById('nav-time').textContent = d.timestamp;
+
+    const statusEl = document.getElementById('kpi-status');
+    statusEl.textContent = d.category;
+    statusEl.className = 'kpi-value ' + d.category.toLowerCase();
+
+    // Banner
+    const banner = document.getElementById('banner');
+    banner.style.display = 'flex';
+    banner.className = 'banner ' + d.category.toLowerCase();
+    const icons = { Low:'✅', Medium:'⚠️', High:'🔴' };
+    const msgs  = {
+      Low:    'Power usage is LOW — everything looks efficient.',
+      Medium: 'MEDIUM usage detected. Consider switching off idle devices.',
+      High:   'HIGH consumption! Turn off heavy appliances like AC or heater now.'
+    };
+    document.getElementById('banner-icon').textContent = icons[d.category];
+    document.getElementById('banner-text').textContent = msgs[d.category];
+
+    // Device table
+    const tbody = document.getElementById('device-tbody');
+    tbody.innerHTML = '';
+    const maxP = Math.max(...d.devices.map(x=>x.hybrid_power));
+    d.devices.forEach((dev, i) => {
+      const pct = ((dev.hybrid_power / maxP)*100).toFixed(0);
+      const cat = dev.hybrid_power < 300 ? 'low' : dev.hybrid_power < 800 ? 'medium' : 'high';
+      const checked = deviceToggles[dev.device] !== false ? 'checked' : '';
+      tbody.innerHTML += `<tr>
+        <td><span class="device-name">${dev.device}</span></td>
+        <td>
+          <label class="switch">
+            <input type="checkbox" ${checked}
+              onchange="toggleDevice('${dev.device}',this.checked)">
+            <span class="slider"></span>
+          </label>
+        </td>
+        <td><span class="mono">${dev.voltage.toFixed(1)} V</span></td>
+        <td><span class="mono">${dev.current.toFixed(3)} A</span></td>
+        <td><span class="mono">${dev.hybrid_power.toFixed(1)} W</span></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:${pct}%;background:${COLORS[i]}"></div>
+            </div>
+            <span style="font-size:0.75em;color:#6b6b8a">${pct}%</span>
+          </div>
+        </td>
+        <td><span class="pill ${cat}">${cat.charAt(0).toUpperCase()+cat.slice(1)}</span></td>
+      </tr>`;
+    });
+
+    // Trend
+    const t = d.timestamp.slice(11,19);
+    trendData.labels.push(t);
+    trendData.datasets[0].data.push(d.total_predicted);
+    if (trendData.labels.length > 20) { trendData.labels.shift(); trendData.datasets[0].data.shift(); }
+    trendChart.update();
+
+    // Donut
+    donut.data.labels = d.devices.map(x=>x.device);
+    donut.data.datasets[0].data = d.devices.map(x=>x.hybrid_power);
+    donut.update();
+
+    // Bar
+    bar.data.labels = d.devices.map(x=>x.device);
+    bar.data.datasets[0].data = d.devices.map(x=>x.hybrid_power);
+    bar.update();
+
+    // Cost
+    costData.labels.push(t);
+    costData.datasets[0].data.push(d.bill);
+    if (costData.labels.length > 20) { costData.labels.shift(); costData.datasets[0].data.shift(); }
+    costChart.update();
+  }).catch(()=>{});
+}
+
+function toggleDevice(dev, state) {
+  deviceToggles[dev] = state;
+  fetch(`/api/toggle/${dev}`, { method:'POST' });
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
