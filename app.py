@@ -15,7 +15,19 @@ app = Flask(__name__)
 init_db()
 
 latest_data = {}
-device_status = {"Fan": True, "AC": True, "TV": True, "Fridge": True}
+device_status = {
+    "Fan":             True,
+    "AC":              True,
+    "TV":              True,
+    "Fridge":          True,
+    "Washing Machine": False,
+    "Microwave":       False,
+    "Water Heater":    False,
+    "LED Bulb 1":      True,   # set default on/off as you like
+    "LED Bulb 2":      True,
+    "LED Bulb 3":      False,
+    "LED Bulb 4":      False,
+}
 
 def collection_loop():
     while True:
@@ -70,10 +82,6 @@ threading.Thread(target=collection_loop, daemon=True).start()
 
 # ── Routes ────────────────────────────────────────────────────
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
 @app.route("/history")
 def history():
     return render_template("history.html")
@@ -119,6 +127,13 @@ def export():
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment;filename=power_data.csv"}
     )
+@app.route("/")
+def landing():
+    return render_template("landing.html")
+
+@app.route("/dashboard")
+def dashboard():
+    return render_template("index.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
