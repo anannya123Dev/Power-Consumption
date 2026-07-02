@@ -4,64 +4,74 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📋 PowerSense — History</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root {
-  --bg:#05050f; --surface:#0d0d1f; --surface2:#13132a; --border:#1c1c3a;
-  --accent:#7b5ea7; --accent2:#4fc3f7; --glow:rgba(123,94,167,0.35);
-  --low:#4ade80; --med:#fb923c; --high:#f87171;
-  --text:#e8e8f0; --muted:#6b6b8a;
-  --font-display:'Space Grotesk',sans-serif;
-  --font-body:'Inter',sans-serif;
-  --font-mono:'JetBrains Mono',monospace;
-}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;}
-body::before{content:'';position:fixed;inset:0;z-index:0;
-  background:radial-gradient(ellipse 70% 50% at 15% 20%,rgba(123,94,167,0.1) 0%,transparent 60%),
-             radial-gradient(ellipse 50% 40% at 85% 70%,rgba(79,195,247,0.07) 0%,transparent 60%);
-  pointer-events:none;}
+:root{
+  --bg:#080b14;--surface:#0e1422;--surface2:#131929;--border:#1e2535;
+  --emerald:#10b981;--emerald-d:#059669;--emerald-glow:rgba(16,185,129,0.25);
+  --yellow:#f59e0b;--orange:#f97316;--purple:#8b5cf6;--red:#ef4444;
+  --text:#f1f5f9;--muted:#64748b;--muted2:#94a3b8;
+  --font:'Outfit',sans-serif;
+}
+*{box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
 
-/* Nav */
-nav{position:sticky;top:0;z-index:100;background:rgba(5,5,15,0.85);
-  backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+/* Background glow */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 10%,rgba(16,185,129,0.07) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 80%,rgba(245,158,11,0.05) 0%,transparent 60%);}
+
+/* ── Nav ── */
+nav{position:sticky;top:0;z-index:100;
+  background:rgba(8,11,20,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
   padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;}
-.nav-brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);
-  font-size:1.2em;font-weight:700;color:var(--text);}
-.nav-brand .bolt{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
-  border-radius:8px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 16px var(--glow);}
+.nav-brand{display:flex;align-items:center;gap:10px;font-size:1.15em;font-weight:800;}
+.nav-brand .bolt{width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,var(--emerald),var(--yellow));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 16px var(--emerald-glow);font-size:1em;}
+.brand-name{background:linear-gradient(135deg,var(--text),var(--emerald));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .nav-links{display:flex;gap:4px;}
 .nav-links a{font-size:0.85em;font-weight:500;color:var(--muted);text-decoration:none;
   padding:7px 14px;border-radius:8px;transition:all 0.2s;border:1px solid transparent;}
-.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--surface2);border-color:var(--border);}
+.nav-links a:hover,.nav-links a.active{
+  color:var(--text);background:var(--surface2);border-color:var(--border);}
 
+/* ── Layout ── */
 main{position:relative;z-index:1;padding:28px 32px;}
 
-/* Page title */
-.page-title{font-family:var(--font-display);font-size:1.6em;font-weight:700;
-  margin-bottom:6px;
-  background:linear-gradient(135deg,var(--text),var(--muted));
+/* ── Page header ── */
+.page-title{font-size:1.6em;font-weight:800;margin-bottom:6px;
+  background:linear-gradient(135deg,var(--text),var(--emerald));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .page-sub{font-size:0.85em;color:var(--muted);margin-bottom:28px;}
 
-/* Summary cards */
+/* ── KPI cards ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:16px;
   padding:20px;position:relative;overflow:hidden;transition:transform 0.25s;cursor:default;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.kpi:nth-child(1)::before{background:linear-gradient(90deg,var(--emerald),var(--yellow));}
+.kpi:nth-child(2)::before{background:linear-gradient(90deg,var(--yellow),var(--orange));}
+.kpi:nth-child(3)::before{background:linear-gradient(90deg,var(--purple),var(--emerald));}
+.kpi:nth-child(4)::before{background:linear-gradient(90deg,var(--orange),var(--red));}
 .kpi:hover{transform:translateY(-3px);}
-.kpi-label{font-size:0.72em;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;
-  color:var(--muted);margin-bottom:10px;}
-.kpi-value{font-family:var(--font-display);font-size:1.9em;font-weight:700;
-  background:linear-gradient(135deg,var(--accent2),#a78bfa);
+.kpi-icon{position:absolute;right:14px;top:14px;font-size:1.5em;opacity:0.1;}
+.kpi-label{font-size:0.72em;font-weight:500;text-transform:uppercase;
+  letter-spacing:0.08em;color:var(--muted);margin-bottom:10px;}
+.kpi-value{font-size:1.9em;font-weight:800;
+  background:linear-gradient(135deg,var(--emerald),var(--yellow));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.kpi-icon{position:absolute;right:14px;top:14px;font-size:1.5em;opacity:0.12;}
 
-/* Filters */
-.filter-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;
-  padding:20px 24px;margin-bottom:24px;}
-.filter-title{font-size:0.72em;font-weight:500;text-transform:uppercase;
+/* ── Filter card ── */
+.filter-card{background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:20px 24px;margin-bottom:24px;}
+.filter-title{font-size:0.72em;font-weight:600;text-transform:uppercase;
   letter-spacing:0.08em;color:var(--muted);margin-bottom:14px;}
 .filter-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;}
 .filter-group{display:flex;flex-direction:column;gap:6px;}
@@ -69,79 +79,87 @@ main{position:relative;z-index:1;padding:28px 32px;}
 .filter-group select,.filter-group input{
   background:var(--surface2);color:var(--text);
   border:1px solid var(--border);padding:8px 12px;
-  border-radius:9px;font-size:0.84em;
-  font-family:var(--font-body);
-  transition:border-color 0.2s;outline:none;}
-.filter-group select:focus,.filter-group input:focus{border-color:var(--accent);}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;
-  border-radius:9px;font-size:0.82em;font-weight:600;
-  background:linear-gradient(135deg,var(--accent),#6366f1);
-  color:white;text-decoration:none;transition:all 0.2s;
-  border:none;cursor:pointer;box-shadow:0 2px 12px rgba(123,94,167,0.3);}
-.btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(123,94,167,0.45);}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);
-  box-shadow:none;}
-.btn-ghost:hover{border-color:var(--accent);color:var(--text);transform:none;}
-.search-input{background:var(--surface2);color:var(--text);border:1px solid var(--border);
-  padding:8px 14px;border-radius:9px;font-size:0.84em;width:180px;outline:none;
-  font-family:var(--font-body);transition:border-color 0.2s;}
-.search-input:focus{border-color:var(--accent);}
+  border-radius:9px;font-size:0.84em;font-family:var(--font);
+  outline:none;transition:border-color 0.2s;}
+.filter-group select:focus,.filter-group input:focus{border-color:var(--emerald);}
+.search-input{background:var(--surface2);color:var(--text);
+  border:1px solid var(--border);padding:8px 14px;
+  border-radius:9px;font-size:0.84em;width:180px;
+  outline:none;font-family:var(--font);transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--emerald);}
 
-/* Charts */
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;
+  border-radius:9px;font-size:0.82em;font-weight:700;
+  background:linear-gradient(135deg,var(--emerald),var(--emerald-d));
+  color:white;text-decoration:none;border:none;cursor:pointer;
+  transition:all 0.2s;box-shadow:0 2px 12px var(--emerald-glow);}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--emerald-glow);}
+.btn-ghost{background:transparent;border:1px solid var(--border);
+  color:var(--muted);box-shadow:none;}
+.btn-ghost:hover{border-color:var(--emerald);color:var(--text);transform:none;}
+
+/* ── Charts ── */
 .chart-row{display:grid;gap:16px;margin-bottom:16px;}
-.chart-row.r2{grid-template-columns:1fr 1fr;}
+.r2{grid-template-columns:1fr 1fr;}
 .chart-card{background:var(--surface);border:1px solid var(--border);
   border-radius:16px;padding:22px;position:relative;overflow:hidden;}
 .chart-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.4;}
-.chart-title{font-family:var(--font-display);font-size:0.82em;font-weight:600;
-  color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;
-  margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+  background:linear-gradient(90deg,transparent,var(--emerald),transparent);opacity:0.3;}
+.chart-title{font-size:0.82em;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.06em;color:var(--muted2);margin-bottom:18px;
+  display:flex;align-items:center;gap:8px;}
 
-/* Table */
+/* ── Table ── */
 .table-card{background:var(--surface);border:1px solid var(--border);
   border-radius:16px;padding:22px;overflow-x:auto;}
 .table-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-.table-title{font-family:var(--font-display);font-size:0.82em;font-weight:600;
-  color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+.table-title{font-size:0.82em;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.06em;color:var(--muted2);}
 table{width:100%;border-collapse:collapse;}
-th{font-size:0.72em;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;
+th{font-size:0.7em;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;
   color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
-td{padding:12px 14px;font-size:0.86em;border-bottom:1px solid rgba(28,28,58,0.5);transition:background 0.2s;}
+td{padding:12px 14px;font-size:0.86em;
+  border-bottom:1px solid rgba(30,37,53,0.5);transition:background 0.15s;}
 tr:hover td{background:var(--surface2);}
 tr:last-child td{border-bottom:none;}
-.mono{font-family:var(--font-mono);font-size:0.85em;color:var(--accent2);}
+.mono{font-family:'Poppins',monospace;font-size:0.84em;color:var(--emerald);}
+.dev-strong{font-weight:700;font-size:0.9em;}
+
+/* Pills */
 .pill{display:inline-block;padding:3px 10px;border-radius:20px;
-  font-size:0.72em;font-weight:600;letter-spacing:0.04em;}
-.pill.low{background:rgba(74,222,128,0.12);color:#4ade80;border:1px solid rgba(74,222,128,0.25);}
-.pill.medium{background:rgba(251,146,60,0.12);color:#fb923c;border:1px solid rgba(251,146,60,0.25);}
-.pill.high{background:rgba(248,113,113,0.12);color:#f87171;border:1px solid rgba(248,113,113,0.25);}
+  font-size:0.7em;font-weight:700;letter-spacing:0.04em;}
+.pill.low   {background:rgba(16,185,129,0.1);color:var(--emerald);border:1px solid rgba(16,185,129,0.2);}
+.pill.medium{background:rgba(245,158,11,0.1);color:var(--yellow); border:1px solid rgba(245,158,11,0.2);}
+.pill.high  {background:rgba(239,68,68,0.1); color:var(--red);    border:1px solid rgba(239,68,68,0.2);}
 
 /* Pagination */
 .pagination{display:flex;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap;}
 .pg-btn{padding:6px 13px;background:var(--surface2);color:var(--muted);
   border:1px solid var(--border);border-radius:7px;cursor:pointer;
-  font-size:0.82em;transition:all 0.2s;}
-.pg-btn:hover:not(.active){border-color:var(--accent);color:var(--text);}
-.pg-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+  font-size:0.82em;transition:all 0.2s;font-family:var(--font);}
+.pg-btn:hover:not(.active){border-color:var(--emerald);color:var(--text);}
+.pg-btn.active{background:var(--emerald);color:white;border-color:var(--emerald);}
 
-/* Empty state */
+/* Empty */
 .empty{text-align:center;padding:48px;color:var(--muted);}
 .empty .emoji{font-size:2.5em;margin-bottom:12px;}
 .empty p{font-size:0.9em;}
 
-footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
-  border-top:1px solid var(--border);font-family:var(--font-mono);position:relative;z-index:1;}
-
-/* Fade in */
-.fade-up{opacity:0;transform:translateY(16px);animation:fadeup 0.45s ease forwards;}
+/* Fade up */
+.fade-up{opacity:0;transform:translateY(14px);animation:fadeup 0.4s ease forwards;}
 @keyframes fadeup{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:0.05s;}.d2{animation-delay:0.1s;}
+.d3{animation-delay:0.15s;}.d4{animation-delay:0.2s;}
+
+footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
+  border-top:1px solid var(--border);position:relative;z-index:1;
+  font-family:'Poppins',monospace;}
 
 @media(max-width:900px){
   .kpi-grid{grid-template-columns:1fr 1fr;}
-  .chart-row.r2{grid-template-columns:1fr;}
-  main{padding:16px;}
-  nav{padding:0 16px;}
+  .r2{grid-template-columns:1fr;}
+  main{padding:16px;}nav{padding:0 16px;}
   .filter-row{flex-direction:column;align-items:stretch;}
 }
 </style>
@@ -151,10 +169,10 @@ footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
 <nav>
   <div class="nav-brand">
     <div class="bolt">⚡</div>
-    PowerSense
+    <span class="brand-name">PowerSense</span>
   </div>
   <div class="nav-links">
-    <a href="/">Dashboard</a>
+    <a href="/dashboard">Dashboard</a>
     <a href="/history" class="active">History</a>
     <a href="/guide">Guide</a>
     <a href="/export">Export</a>
@@ -163,26 +181,26 @@ footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
 
 <main>
   <div class="page-title fade-up">Historical Data</div>
-  <div class="page-sub fade-up">Browse, filter, and analyse past power readings</div>
+  <div class="page-sub fade-up">Browse, filter, and analyse all past power readings</div>
 
-  <!-- Summary cards -->
+  <!-- KPI cards -->
   <div class="kpi-grid">
-    <div class="kpi fade-up">
+    <div class="kpi fade-up d1">
       <div class="kpi-icon">📊</div>
       <div class="kpi-label">Total Readings</div>
       <div class="kpi-value" id="s-total">--</div>
     </div>
-    <div class="kpi fade-up">
+    <div class="kpi fade-up d2">
       <div class="kpi-icon">⚡</div>
       <div class="kpi-label">Avg Power (W)</div>
       <div class="kpi-value" id="s-avg">--</div>
     </div>
-    <div class="kpi fade-up">
+    <div class="kpi fade-up d3">
       <div class="kpi-icon">🔺</div>
       <div class="kpi-label">Peak Power (W)</div>
       <div class="kpi-value" id="s-peak">--</div>
     </div>
-    <div class="kpi fade-up">
+    <div class="kpi fade-up d4">
       <div class="kpi-icon">💰</div>
       <div class="kpi-label">Total Est. Bill</div>
       <div class="kpi-value" id="s-bill">--</div>
@@ -191,21 +209,32 @@ footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
 
   <!-- Filters -->
   <div class="filter-card fade-up">
-    <div class="filter-title">🔍 Filter readings</div>
+    <div class="filter-title">🔍 Filter Readings</div>
     <div class="filter-row">
       <div class="filter-group">
         <label>Device</label>
         <select id="f-device">
           <option value="all">All Devices</option>
-          <option>Fan</option><option>AC</option>
-          <option>TV</option><option>Fridge</option>
+          <option>Fan</option>
+          <option>AC</option>
+          <option>TV</option>
+          <option>Fridge</option>
+          <option>Washing Machine</option>
+          <option>Microwave</option>
+          <option>Water Heater</option>
+          <option>LED Bulb 1</option>
+          <option>LED Bulb 2</option>
+          <option>LED Bulb 3</option>
+          <option>LED Bulb 4</option>
         </select>
       </div>
       <div class="filter-group">
         <label>Category</label>
         <select id="f-cat">
           <option value="all">All</option>
-          <option>Low</option><option>Medium</option><option>High</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
         </select>
       </div>
       <div class="filter-group">
@@ -225,7 +254,7 @@ footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
     </div>
   </div>
 
-  <!-- Charts -->
+  <!-- Charts row 1 -->
   <div class="chart-row r2">
     <div class="chart-card fade-up">
       <div class="chart-title"><span>📈</span> Power Over Time</div>
@@ -236,6 +265,8 @@ footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
       <canvas id="c-donut" height="130"></canvas>
     </div>
   </div>
+
+  <!-- Charts row 2 -->
   <div class="chart-row r2">
     <div class="chart-card fade-up">
       <div class="chart-title"><span>📊</span> Avg Power per Device</div>
@@ -256,10 +287,16 @@ footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
     <table>
       <thead>
         <tr>
-          <th>#</th><th>Timestamp</th><th>Device</th>
-          <th>Voltage</th><th>Current</th>
-          <th>Calc Power</th><th>API Power</th>
-          <th>Hybrid Power</th><th>Predicted</th><th>Category</th>
+          <th>#</th>
+          <th>Timestamp</th>
+          <th>Device</th>
+          <th>Voltage</th>
+          <th>Current</th>
+          <th>Calc Power</th>
+          <th>API Power</th>
+          <th>Hybrid Power</th>
+          <th>Predicted</th>
+          <th>Category</th>
         </tr>
       </thead>
       <tbody id="tbl-body"></tbody>
@@ -271,94 +308,187 @@ footer{text-align:center;padding:28px;font-size:0.75em;color:var(--muted);
 <footer>PowerSense · Real-Time ML Power Monitor · Flask + SQLite + Random Forest</footer>
 
 <script>
-let allRows=[], filteredRows=[];
-const PAGE=15; let pg=1;
-const COLORS=['#7b5ea7','#4fc3f7','#fb923c','#4ade80'];
-const opts={
-  plugins:{legend:{labels:{color:'#6b6b8a',font:{family:"'Inter'",size:11}}}},
-  scales:{x:{ticks:{color:'#6b6b8a',maxTicksLimit:8},grid:{color:'rgba(28,28,58,0.8)'},border:{display:false}},
-          y:{ticks:{color:'#6b6b8a'},grid:{color:'rgba(28,28,58,0.8)'},border:{display:false}}}
+let allRows = [], filteredRows = [];
+const PAGE = 15;
+let pg = 1;
+
+// ── Colors — match index.html exactly ───────────────────────
+const COLORS = [
+  '#10b981','#f59e0b','#8b5cf6','#f97316',
+  '#3b82f6','#ec4899','#ef4444',
+  '#facc15','#fde68a','#fef08a','#d9f99d'
+];
+
+// ── All 11 devices — must match data_collector.py ───────────
+const ALL_DEVICES = [
+  'Fan','AC','TV','Fridge',
+  'Washing Machine','Microwave','Water Heater',
+  'LED Bulb 1','LED Bulb 2','LED Bulb 3','LED Bulb 4'
+];
+
+// ── Chart defaults ───────────────────────────────────────────
+const opts = {
+  plugins:{legend:{labels:{color:'#64748b',font:{family:"'Outfit'",size:11}}}},
+  scales:{
+    x:{ticks:{color:'#64748b',maxTicksLimit:8},
+       grid:{color:'rgba(30,37,53,0.8)'},border:{display:false}},
+    y:{ticks:{color:'#64748b'},
+       grid:{color:'rgba(30,37,53,0.8)'},border:{display:false}}
+  }
 };
 
-const cTrend=new Chart(document.getElementById('c-trend'),{type:'line',
-  data:{labels:[],datasets:[{label:'Predicted (W)',data:[],borderColor:'#7b5ea7',
-    backgroundColor:'rgba(123,94,167,0.08)',fill:true,tension:0.45,pointRadius:2}]},
-  options:{...opts,animation:{duration:300}}});
-
-const cDonut=new Chart(document.getElementById('c-donut'),{type:'doughnut',
-  data:{labels:['Low','Medium','High'],datasets:[{data:[0,0,0],
-    backgroundColor:['#4ade80','#fb923c','#f87171'],borderColor:'#0d0d1f',borderWidth:3,hoverOffset:6}]},
-  options:{plugins:{legend:{position:'bottom',labels:{color:'#6b6b8a',padding:14,font:{family:"'Inter'",size:11}}}},cutout:'65%'}});
-
-const cBar=new Chart(document.getElementById('c-bar'),{type:'bar',
-  data:{labels:[],datasets:[{label:'Avg Hybrid (W)',data:[],backgroundColor:COLORS,borderRadius:6,borderSkipped:false}]},
-  options:opts});
-
-const cBill=new Chart(document.getElementById('c-bill'),{type:'line',
-  data:{labels:[],datasets:[{label:'₹ Bill',data:[],borderColor:'#fcd34d',
-    backgroundColor:'rgba(252,211,77,0.07)',fill:true,tension:0.45,pointRadius:2}]},
-  options:{...opts,animation:{duration:300}}});
-
-fetch('/api/history').then(r=>r.json()).then(data=>{
-  allRows=data; filteredRows=[...data]; updateAll();
+// ── Charts ───────────────────────────────────────────────────
+const cTrend = new Chart(document.getElementById('c-trend'),{
+  type:'line',
+  data:{labels:[],datasets:[{
+    label:'Predicted (W)',data:[],
+    borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.07)',
+    fill:true,tension:0.45,pointRadius:2
+  }]},
+  options:{...opts,animation:{duration:300}}
 });
 
-function updateAll(){ updateCards(); updateCharts(); renderTable(); }
+const cDonut = new Chart(document.getElementById('c-donut'),{
+  type:'doughnut',
+  data:{
+    labels:['Low','Medium','High'],
+    datasets:[{data:[0,0,0],
+      backgroundColor:['#10b981','#f59e0b','#ef4444'],
+      borderColor:'#080b14',borderWidth:3,hoverOffset:6}]
+  },
+  options:{
+    plugins:{legend:{position:'bottom',
+      labels:{color:'#64748b',padding:14,font:{family:"'Outfit'",size:11}}}},
+    cutout:'65%'
+  }
+});
 
-function updateCards(){
-  const rows=filteredRows;
-  if(!rows.length) return;
-  const pred=rows.map(r=>r.predicted_total||0);
-  document.getElementById('s-total').textContent=rows.length;
-  document.getElementById('s-avg').textContent=(pred.reduce((a,b)=>a+b,0)/pred.length).toFixed(1);
-  document.getElementById('s-peak').textContent=Math.max(...pred).toFixed(1);
-  document.getElementById('s-bill').textContent='₹ '+(pred.reduce((a,b)=>a+b,0)/1000*6.5).toFixed(2);
+const cBar = new Chart(document.getElementById('c-bar'),{
+  type:'bar',
+  data:{labels:[],datasets:[{
+    label:'Avg Hybrid Power (W)',data:[],
+    backgroundColor:COLORS,borderRadius:6,borderSkipped:false
+  }]},
+ options:{
+    plugins:{
+      legend:{labels:{color:'#64748b',font:{family:"'Outfit'",size:11}}}
+    },
+    scales:{
+      x:{
+        ticks:{
+          color:'#64748b',
+          font:{family:"'Outfit'",size:10},
+          maxRotation:35,
+          minRotation:35
+        },
+        grid:{color:'rgba(30,37,53,0.8)'},
+        border:{display:false}
+      },
+      y:{
+        ticks:{color:'#64748b',font:{family:"'Outfit'",size:11}},
+        grid:{color:'rgba(30,37,53,0.8)'},
+        border:{display:false}
+      }
+    }
+  }
+});
+
+const cBill = new Chart(document.getElementById('c-bill'),{
+  type:'line',
+  data:{labels:[],datasets:[{
+    label:'₹ Bill',data:[],
+    borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.07)',
+    fill:true,tension:0.45,pointRadius:2
+  }]},
+  options:{...opts,animation:{duration:300}}
+});
+
+// ── Load data ────────────────────────────────────────────────
+fetch('/api/history')
+  .then(r => r.json())
+  .then(data => {
+    allRows      = data;
+    filteredRows = [...data];
+    updateAll();
+  });
+
+function updateAll(){
+  updateCards();
+  updateCharts();
+  renderTable();
 }
 
+// ── Summary cards ────────────────────────────────────────────
+function updateCards(){
+  const rows = filteredRows;
+  if(!rows.length) return;
+  const pred = rows.map(r => r.predicted_total || 0);
+  const total = pred.reduce((a,b) => a+b, 0);
+  document.getElementById('s-total').textContent = rows.length;
+  document.getElementById('s-avg').textContent   = (total/pred.length).toFixed(1);
+  document.getElementById('s-peak').textContent  = Math.max(...pred).toFixed(1);
+  document.getElementById('s-bill').textContent  = '₹ '+(total/1000*6.5).toFixed(2);
+}
+
+// ── Charts update ────────────────────────────────────────────
 function updateCharts(){
-  const rows=filteredRows.slice(-40);
-  cTrend.data.labels=rows.map(r=>(r.timestamp||'').slice(11,19));
-  cTrend.data.datasets[0].data=rows.map(r=>r.predicted_total);
+  // Trend — last 40 rows
+  const rows = filteredRows.slice(-40);
+  cTrend.data.labels = rows.map(r=>(r.timestamp||'').slice(11,19));
+  cTrend.data.datasets[0].data = rows.map(r=>r.predicted_total);
   cTrend.update();
 
-  cDonut.data.datasets[0].data=[
+  // Category donut
+  cDonut.data.datasets[0].data = [
     filteredRows.filter(r=>r.category==='Low').length,
     filteredRows.filter(r=>r.category==='Medium').length,
     filteredRows.filter(r=>r.category==='High').length
   ];
   cDonut.update();
 
-  const devs=['Fan','AC','TV','Fridge'];
-  cBar.data.labels=devs;
-  cBar.data.datasets[0].data=devs.map(d=>{
-    const dr=filteredRows.filter(r=>r.device===d);
-    return dr.length?(dr.reduce((a,r)=>a+(r.hybrid_power||0),0)/dr.length).toFixed(1):0;
+  // Device avg bar — all 11 devices
+  cBar.data.labels = ALL_DEVICES;
+  cBar.data.datasets[0].data = ALL_DEVICES.map(dev => {
+    const devRows = filteredRows.filter(r=>r.device===dev);
+    if(!devRows.length) return 0;
+    return (devRows.reduce((a,r)=>a+(r.hybrid_power||0),0)/devRows.length).toFixed(1);
   });
+  cBar.data.datasets[0].backgroundColor = COLORS;
   cBar.update();
 
-  cBill.data.labels=rows.map(r=>(r.timestamp||'').slice(11,19));
-  cBill.data.datasets[0].data=rows.map(r=>((r.predicted_total||0)/1000*6.5).toFixed(4));
+  // Bill trend
+  cBill.data.labels = rows.map(r=>(r.timestamp||'').slice(11,19));
+  cBill.data.datasets[0].data = rows.map(r=>((r.predicted_total||0)/1000*6.5).toFixed(4));
   cBill.update();
 }
 
+// ── Table render ─────────────────────────────────────────────
 function renderTable(){
-  const start=(pg-1)*PAGE;
-  const slice=filteredRows.slice(start,start+PAGE);
-  const tbody=document.getElementById('tbl-body');
-  tbody.innerHTML='';
+  const start   = (pg-1)*PAGE;
+  const slice   = filteredRows.slice(start, start+PAGE);
+  const tbody   = document.getElementById('tbl-body');
+  tbody.innerHTML = '';
+
   if(!slice.length){
-    tbody.innerHTML=`<tr><td colspan="10">
-      <div class="empty"><div class="emoji">🔍</div>
-      <p>No readings match your filters.</p></div></td></tr>`;
-    document.getElementById('pagination').innerHTML='';
+    tbody.innerHTML = `<tr><td colspan="10">
+      <div class="empty">
+        <div class="emoji">🔍</div>
+        <p>No readings match your filters.</p>
+      </div></td></tr>`;
+    document.getElementById('pagination').innerHTML = '';
     return;
   }
-  slice.forEach((r,i)=>{
-    const cat=(r.category||'').toLowerCase();
-    tbody.innerHTML+=`<tr>
-      <td style="color:var(--muted)">${start+i+1}</td>
-      <td><span class="mono" style="font-size:0.78em">${r.timestamp||'--'}</span></td>
-      <td><strong style="font-family:var(--font-display)">${r.device||'--'}</strong></td>
+
+  slice.forEach((r,i) => {
+    const cat = (r.category||'').toLowerCase();
+    // Color the device name by its index in ALL_DEVICES
+    const devIdx   = ALL_DEVICES.indexOf(r.device);
+    const devColor = devIdx >= 0 ? COLORS[devIdx] : '#94a3b8';
+
+    tbody.innerHTML += `<tr>
+      <td style="color:var(--muted);font-size:0.8em">${start+i+1}</td>
+      <td><span class="mono" style="font-size:0.78em;color:var(--muted2)">${r.timestamp||'--'}</span></td>
+      <td><span class="dev-strong" style="color:${devColor}">${r.device||'--'}</span></td>
       <td><span class="mono">${(r.voltage||0).toFixed(1)}</span></td>
       <td><span class="mono">${(r.current||0).toFixed(3)}</span></td>
       <td><span class="mono">${(r.calc_power||0).toFixed(1)}</span></td>
@@ -368,43 +498,60 @@ function renderTable(){
       <td><span class="pill ${cat}">${r.category||'--'}</span></td>
     </tr>`;
   });
+
   renderPg();
 }
 
+// ── Pagination ───────────────────────────────────────────────
 function renderPg(){
-  const total=Math.ceil(filteredRows.length/PAGE);
-  const div=document.getElementById('pagination');
-  div.innerHTML='';
-  for(let i=1;i<=total;i++)
-    div.innerHTML+=`<button class="pg-btn ${i===pg?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  const total = Math.ceil(filteredRows.length/PAGE);
+  const div   = document.getElementById('pagination');
+  div.innerHTML = '';
+  // Show max 10 page buttons at a time
+  const start = Math.max(1, pg-4);
+  const end   = Math.min(total, start+9);
+  if(start>1) div.innerHTML += `<button class="pg-btn" onclick="goPage(1)">«</button>`;
+  for(let i=start;i<=end;i++)
+    div.innerHTML += `<button class="pg-btn ${i===pg?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  if(end<total) div.innerHTML += `<button class="pg-btn" onclick="goPage(${total})">»</button>`;
 }
 
 function goPage(n){ pg=n; renderTable(); }
 
+// ── Filters ──────────────────────────────────────────────────
 function applyFilters(){
-  const dev=document.getElementById('f-device').value;
-  const cat=document.getElementById('f-cat').value;
-  const from=document.getElementById('f-from').value;
-  const to=document.getElementById('f-to').value;
-  const q=document.getElementById('f-search').value.toLowerCase();
-  filteredRows=allRows.filter(r=>{
-    const d=(r.timestamp||'').split(' ')[0];
-    return (dev==='all'||r.device===dev)&&
-           (cat==='all'||r.category===cat)&&
-           (!from||d>=from)&&(!to||d<=to)&&
-           (!q||(r.device||'').toLowerCase().includes(q));
+  const dev  = document.getElementById('f-device').value;
+  const cat  = document.getElementById('f-cat').value;
+  const from = document.getElementById('f-from').value;
+  const to   = document.getElementById('f-to').value;
+  const q    = document.getElementById('f-search').value.toLowerCase();
+
+  filteredRows = allRows.filter(r => {
+    const dateStr = (r.timestamp||'').split(' ')[0];  // "2026-06-16"
+    return (dev==='all' || r.device===dev) &&
+           (cat==='all' || r.category===cat) &&
+           (!from || dateStr >= from) &&
+           (!to   || dateStr <= to)   &&
+           (!q    || (r.device||'').toLowerCase().includes(q));
   });
-  pg=1; updateAll();
+
+  pg = 1;
+  updateAll();
 }
 
 function resetFilters(){
-  ['f-device','f-cat','f-search'].forEach(id=>document.getElementById(id).value=id==='f-device'||id==='f-cat'?'all':'');
-  document.getElementById('f-from').value='';
-  document.getElementById('f-to').value='';
-  filteredRows=[...allRows]; pg=1; updateAll();
+  document.getElementById('f-device').value = 'all';
+  document.getElementById('f-cat').value    = 'all';
+  document.getElementById('f-from').value   = '';
+  document.getElementById('f-to').value     = '';
+  document.getElementById('f-search').value = '';
+  filteredRows = [...allRows];
+  pg = 1;
+  updateAll();
 }
 
-document.getElementById('f-search').addEventListener('input',applyFilters);
+// Live search as user types
+document.getElementById('f-search').addEventListener('input', applyFilters);
 </script>
 </body>
 </html>
